@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>마이페이지 - 질문 이력</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .doc-button {
+            display: block;
+            margin: 0.5rem 0;
+            padding: 0.5rem 1rem;
+            background-color: #f1f1f1;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+        }
+        .doc-button:hover {
+            background-color: #e0e0e0;
+        }
+        .qa-block {
+            background: #fff;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+        }
+        .qa-block h3 {
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+<!-- ✅ 공통 네비게이션바 -->
+<nav style="display: flex; justify-content: space-between; background-color: #f0f0f0; padding: 1rem;">
+    <div><strong>DonutPDF</strong></div>
+    <div>
+        <a href="/logout">Logout</a>
+    </div>
+</nav>
+
+<header>
+    <h1>My Question History</h1>
+</header>
+<main>
+    <section>
+        <h2>Summary Requested Document</h2>
+        <div id="doc-list"></div>
+    </section>
+    <section>
+        <h2>Questions and Answers</h2>
+        <div id="qa-list"></div>
+    </section>
+</main>
+
+<script>
+    async function loadDocuments() {
+        const response = await fetch('/api/users/me/questions');
+        const data = await response.json();
+        const grouped = {};
+
+        data.forEach(item => {
+            if (!grouped[item.documentId]) grouped[item.documentId] = {
+                documentName: item.documentName,
+                questions: []
+            };
+            grouped[item.documentId].questions.push(item);
+        });
+
+        const docList = document.getElementById('doc-list');
+        const qaList = document.getElementById('qa-list');
+        docList.innerHTML = qaList.innerHTML = '';
+
+        for (const [docId, doc] of Object.entries(grouped)) {
+            const btn = document.createElement('button');
+            btn.className = 'doc-button';
+            btn.innerText = doc.documentName;
+            btn.onclick = () => {
+                qaList.innerHTML = '';
+                doc.questions.forEach(q => {
+                    const block = document.createElement('div');
+                    block.className = 'qa-block';
+                    block.innerHTML = `
+              <h3>Q. ${q.questionText}</h3>
+              <p><strong>A.</strong> ${q.answerText}</p>
+              <small>${q.createdAt}</small>
+            `;
+                    qaList.appendChild(block);
+                });
+            };
+            docList.appendChild(btn);
+        }
+    }
+
+    loadDocuments();
+</script>
+</body>
+</html>

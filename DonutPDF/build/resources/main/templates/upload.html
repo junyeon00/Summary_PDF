@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>PDF 업로드</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<!-- ✅ 공통 네비게이션바 -->
+<nav style="display: flex; justify-content: space-between; background-color: #f0f0f0; padding: 1rem;">
+    <div><strong>DonutPDF</strong></div>
+    <div>
+        <a href="/mypage" style="margin-right: 1rem;">Mypage</a>
+        <a href="/logout">Logout</a>
+    </div>
+</nav>
+
+<main>
+    <form id="upload-form" enctype="multipart/form-data">
+        <h2>Upload and summarize PDF files</h2>
+        <input type="file" name="file" id="file" accept="application/pdf" required />
+        <button type="submit">Upload and Summary</button>
+    </form>
+
+    <!-- ✅ 요약 결과를 보기 좋게 표시 -->
+    <div id="upload-status" style="margin-top: 2rem; border: 1px solid #ccc; padding: 1rem; background-color: #fafafa;"></div>
+
+    <!-- ✅ Chat 페이지 이동 버튼 -->
+    <div style="margin-top: 2rem;">
+        <a href="/chat">
+            <button type="button">Go to Chat page</button>
+        </a>
+    </div>
+</main>
+
+<script>
+    const uploadForm = document.getElementById('upload-form');
+    const uploadStatus = document.getElementById('upload-status');
+
+    uploadForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(uploadForm);
+        uploadStatus.innerHTML = '<strong>Summarizing...</strong>';
+        try {
+            const res = await fetch('/api/summarizeFile', {
+                method: 'POST',
+                body: formData
+            });
+            const summary = await res.text();
+            uploadStatus.innerHTML = `
+                <h3>📄 Summary results</h3>
+                <div style="white-space: pre-wrap;">${summary}</div>
+            `;
+        } catch {
+            uploadStatus.innerHTML = '<strong style="color: red;">summary failure</strong>';
+        }
+    });
+</script>
+</body>
+</html>
+
